@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<!-- 防止使用者縮放，確保遊戲按鈕不會隨便跑版 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>心。靜</title>
+
+<!-- iOS 全螢幕專用設定 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="心。靜">
+
+<!-- 行動裝置 PWA 設定（一鍵加入主畫面） -->
+<link rel="manifest" href="data:application/manifest+json,{%22name%22:%22心。靜%22,%22short_name%22:%22心靜%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22orientation%22:%22portrait%22,%22background_color%22:%22%23FAF6F0%22,%22theme_color%22:%22%23FAF6F0%22}">
+
+<style>
+  :root {
+    --bg-cream: #FAF6F0;
+    --card-bg: #FFFFFF;
+    --wood-main: #B38664;
+    --wood-light: #DFC7B4;
+    --sage-green: #98A78F;
+    --warm-terracotta: #D3927D;
+    --text-primary: #5C4B43;
+    --text-sub: #9E8E84;
+    --shadow-soft: 0 10px 25px rgba(179, 134, 100, 0.12);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 滿版與瀏海屏安全區域適配 (viewport-fit) */
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--bg-cream);
+    position: fixed; /* 防止橡皮筋回彈效果 */
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #app-container {
+    width: 100%;
+    max-width: 430px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    padding: calc(20px + env(safe-area-inset-top)) 20px calc(15px + env(safe-area-inset-bottom)) 20px;
+  }
+
+  header {
+    text-align: center;
+    position: relative;
+  }
+
+  .nav-back {
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: var(--text-sub);
+    cursor: pointer;
+    display: none;
+    padding: 8px;
+    border-radius: 50%;
+  }
+
+  h1 {
+    font-size: 24px;
+    letter-spacing: 6px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: var(--text-sub);
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+
+  .screen {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+
+  .screen.active {
+    display: flex;
+  }
+
+  /* 主選單 */
+  .menu-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .menu-card {
+    background: var(--card-bg);
+    border-radius: 24px;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: var(--shadow-soft);
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+
+  .menu-card:active {
+    transform: scale(0.96);
+  }
+
+  .card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    background: var(--bg-cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card-info h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .card-info p {
+    font-size: 12px;
+    color: var(--text-sub);
+  }
+
+  /* 靜音與音量面板 */
+  .noise-panel {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 12px 16px;
+    box-shadow: var(--shadow-soft);
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .noise-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sub);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .noise-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .noise-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .noise-btn {
+    background: var(--bg-cream);
+    border: none;
+    color: var(--text-primary);
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    cursor: pointer;
+    min-width: 80px;
+  }
+
+  .noise-btn.active {
+    background: var(--sage-green);
+    color: #FFF;
+    font-weight: bold;
+  }
+
+  .noise-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--bg-cream);
+    outline: none;
+  }
+
+  .noise-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--wood-main);
+    cursor: pointer;
+  }
+
+  /* 木魚 */
+  .muyu-box {
+    position: relative;
+    cursor: pointer;
+    margin: 25px 0;
+  }
+
+  .muyu-svg {
+    width: 180px;
+    height: 160px;
+    transition: transform 0.08s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 15px 20px rgba(179, 134, 100, 0.15));
+  }
+
+  .muyu-box:active .muyu-svg, .muyu-hit {
+    transform: scale(0.91);
+  }
+
+  .counter-box {
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .counter-num {
+    font-size: 38px;
+    font-weight: 300;
+  }
+
+  .counter-label {
+    font-size: 12px;
+    color: var(--text-sub);
+    letter-spacing: 2px;
+  }
+
+  .float-tip {
+    position: absolute;
+    top: 15%;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--warm-terracotta);
+    opacity: 0;
+    pointer-events: none;
+    animation: floatUp 0.8s ease-out forwards;
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(0.9); }
+    100% { opacity: 0; transform: translateY(-50px) scale(1.15); }
+  }
+
+  /* 上香 */
+  .incense-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 300px;
+    justify-content: flex-end;
+    position: relative;
+    width: 100%;
+  }
+
+  .censer {
+    width: 110px;
+    height: 55px;
+    background: #7D8E74;
+    border-radius: 12px 12px 28px 25px;
+    box-shadow: 0 8px 15px rgba(125, 142, 116, 0.2);
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  .censer::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    width: 122px;
+    height: 10px;
+    background: #6A7C61;
+    border-radius: 5px;
+  }
+
+  .incense-stick {
+    width: 5px;
+    height: 140px;
+    background: #964B00;
+    border-radius: 3px;
+    position: absolute;
+    bottom: 40px;
+    cursor: pointer;
+    transition: height 0.3s ease;
+  }
+
+  .incense-tip {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #FF5722;
+    box-shadow: 0 0 8px #FF7043, 0 0 15px #FFAB91;
+    display: none;
+  }
+
+  .incense-stick.lit .incense-tip {
+    display: block;
+    animation: glow 1.8s infinite alternate ease-in-out;
+  }
+
+  @keyframes glow {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; filter: drop-shadow(0 0 6px #FF7043); }
+  }
+
+  canvas#smoke-canvas {
+    position: absolute;
+    bottom: 170px;
+    width: 160px;
+    height: 180px;
+    pointer-events: none;
+  }
+
+  /* 佛珠 */
+  .mala-container {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .mala-track {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px dashed rgba(179, 134, 100, 0.2);
+  }
+
+  .bead-item {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #D7B197, #8B5E3C);
+    box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+
+  .guru-bead {
+    width: 28px;
+    height: 28px;
+    background: radial-gradient(circle at 35% 35%, #E59866, #A04000);
+  }
+
+  .control-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--wood-light);
+    color: var(--text-primary);
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+    margin-top: 10px;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-sub);
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div id="app-container">
+  <header>
+    <button class="nav-back" id="btn-back">←</button>
+    <h1 id="page-title">心。靜</h1>
+    <div class="subtitle" id="page-subtitle">靜坐觀心・萬籟俱息</div>
+  </header>
+
+  <!-- 主選單 -->
+  <main class="screen active" id="screen-menu">
+    <div class="menu-grid">
+      <div class="menu-card" onclick="goToScreen('muyu')">
+        <div class="card-icon">
+          <svg width="32" height="30" viewBox="0 0 100 100">
+            <path d="M20,60 C20,35 45,20 70,25 C85,28 90,45 85,65 C78,82 50,85 30,80 Z" fill="#B38664"/>
+            <circle cx="65" cy="45" r="7" fill="#FFF"/>
+            <path d="M40,65 Q60,60 70,75" stroke="#7E5637" stroke-width="5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <h2>叩敲木魚</h2>
+          <p>叩響清明，撫平心緒雜念</p>
+        </div>
+      </div>
+
+      <div class="menu-card" onclick="goToScreen('incense')">
+        <div class="card-icon">
+          <svg width="32" height="30" viewBox="0 0 100 100">
+            <path d="M30,70 L70,70 C70,85 30,85 30,70 Z" fill="#7D8E74"/>
+            <line x1="50" y1="20" x2="50" y2="70" stroke="#964B00" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="50" cy="20" r="4" fill="#FF7043"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <h2>靜心上香</h2>
+          <p>一縷清煙，凝神靜息心安</p>
+        </div>
+      </div>
+
+      <div class="menu-card" onclick="goToScreen('mala')">
+        <div class="card-icon">
+          <svg width="32" height="30" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="30" stroke="#B38664" stroke-width="5" fill="none" stroke-dasharray="2 12"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <h2>轉動念珠</h2>
+          <p>指撫珠圓，百零八念得淨</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 木魚 -->
+  <section class="screen" id="screen-muyu">
+    <div class="counter-box">
+      <div class="counter-num" id="muyu-count">0</div>
+      <div class="counter-label">功德平靜</div>
+    </div>
+    <div class="muyu-box" id="muyu-btn">
+      <svg class="muyu-svg" viewBox="0 0 120 100">
+        <path d="M 25,60 C 20,30 50,15 80,22 C 105,28 110,50 102,70 C 92,90 55,94 32,88 C 22,85 24,70 25,60 Z" fill="#C29470"/>
+        <path d="M 38,58 C 36,42 55,30 75,34 C 92,38 96,52 90,66 C 83,78 58,80 43,76 Z" fill="#B38664"/>
+        <circle cx="75" cy="46" r="6.5" fill="#FAF6F0"/>
+        <path d="M 45,70 Q 65,65 78,76" stroke="#7A5338" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+        <circle cx="33" cy="38" r="4" fill="#DDBBA0"/>
+      </svg>
+    </div>
+    <button class="control-btn" id="muyu-auto-btn">開啟自動助敲</button>
+  </section>
+
+  <!-- 上香 -->
+  <section class="screen" id="screen-incense">
+    <div class="counter-box">
+      <div class="counter-num" id="incense-status">敬奉清香</div>
+      <div class="counter-label" id="incense-timer">點擊香枝靜心引燃</div>
+    </div>
+    <div class="incense-wrapper">
+      <canvas id="smoke-canvas" width="160" height="180"></canvas>
+      <div class="incense-stick" id="incense-stick">
+        <div class="incense-tip"></div>
+      </div>
+      <div class="censer"></div>
+    </div>
+    <button class="control-btn" id="incense-reset-btn">添換新香</button>
+  </section>
+
+  <!-- 佛珠 -->
+  <section class="screen" id="screen-mala">
+    <div class="counter-box">
+      <div class="counter-num" id="mala-count">0</div>
+      <div class="counter-label">念珠圓滿（/ 108）</div>
+    </div>
+    <div class="mala-container" id="mala-dial">
+      <div class="mala-track"></div>
+    </div>
+    <button class="control-btn" onclick="resetMala()">重新計數</button>
+  </section>
+
+  <!-- 自然音控制 -->
+  <div class="noise-panel">
+    <div class="noise-title">🎧 自然白噪音助眠</div>
+    <div class="noise-row">
+      <button class="noise-btn" id="btn-noise-rain" onclick="toggleNoise('rain')">🌧️ 觀音甘露</button>
+      <input type="range" class="noise-slider" id="slider-noise-rain" min="0" max="1" step="0.05" value="0.3" oninput="adjustVolume('rain', this.value)">
+    </div>
+    <div class="noise-row">
+      <button class="noise-btn" id="btn-noise-river" onclick="toggleNoise('river')">🌊 禪心流水</button>
+      <input type="range" class="noise-slider" id="slider-noise-river" min="0" max="1" step="0.05" value="0.3" oninput="adjustVolume('river', this.value)">
+    </div>
+  </div>
+
+  <footer>隨順當下・自在自得</footer>
+</div>
+
+<script>
+  let audioCtx = null;
+  let rainNode = null;
+  let riverNode = null;
+  let rainGain = null;
+  let riverGain = null;
+
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }
+
+  function soundMuyu() {
+    initAudio();
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(540, t);
+    osc.frequency.exponentialRampToValueAtTime(140, t + 0.08);
+    gain.gain.setValueAtTime(0.8, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + 0.12);
+    if (navigator.vibrate) navigator.vibrate(25);
+  }
+
+  function soundChime() {
+    initAudio();
+    const freqs = [587.33, 880, 1174.66];
+    freqs.forEach((f, idx) => {
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, t);
+      const amp = 0.25 / (idx + 1);
+      gain.gain.setValueAtTime(amp, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 2.8);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 2.8);
+    });
+    if (navigator.vibrate) navigator.vibrate([15, 30, 20]);
+  }
+
+  function soundBead() {
+    initAudio();
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(780, t);
+    osc.frequency.exponentialRampToValueAtTime(260, t + 0.04);
+    gain.gain.setValueAtTime(0.3, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + 0.05);
+    if (navigator.vibrate) navigator.vibrate(15);
+  }
+
+  function createNoiseBuffer() {
+    const bufferSize = 2 * audioCtx.sampleRate;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+    return noiseBuffer;
+  }
+
+  function startRain() {
+    initAudio();
+    rainGain = audioCtx.createGain();
+    const sliderVal = document.getElementById('slider-noise-rain').value;
+    rainGain.gain.setValueAtTime(sliderVal * 0.15, audioCtx.currentTime);
+    const source = audioCtx.createBufferSource();
+    source.buffer = createNoiseBuffer();
+    source.loop = true;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 1000;
+    filter.Q.value = 0.6;
+    source.connect(filter);
+    filter.connect(rainGain);
+    rainGain.connect(audioCtx.destination);
+    source.start(0);
+    rainNode = source;
+
+    rainNode.droplets = setInterval(() => {
+      if(Math.random() > 0.4) {
+        const t = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.frequency.setValueAtTime(1500 + Math.random() * 1000, t);
+        g.gain.setValueAtTime(sliderVal * 0.012, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.05);
+      }
+    }, 180);
+  }
+
+  function stopRain() {
+    if (rainNode) {
+      rainNode.stop();
+      clearInterval(rainNode.droplets);
+      rainNode = null;
+    }
+  }
+
+  function startRiver() {
+    initAudio();
+    riverGain = audioCtx.createGain();
+    const sliderVal = document.getElementById('slider-noise-river').value;
+    riverGain.gain.setValueAtTime(sliderVal * 0.12, audioCtx.currentTime);
+    const source = audioCtx.createBufferSource();
+    source.buffer = createNoiseBuffer();
+    source.loop = true;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 450;
+    const lfo = audioCtx.createOscillator();
+    const lfoGain = audioCtx.createGain();
+    lfo.frequency.value = 0.25;
+    lfoGain.gain.value = 0.06;
+    lfo.connect(lfoGain);
+    lfoGain.connect(riverGain.gain);
+    source.connect(filter);
+    filter.connect(riverGain);
+    riverGain.connect(audioCtx.destination);
+    source.start(0);
+    lfo.start(0);
+    riverNode = source;
+    riverNode.lfo = lfo;
+  }
+
+  function stopRiver() {
+    if (riverNode) {
+      riverNode.stop();
+      if(riverNode.lfo) riverNode.lfo.stop();
+      riverNode = null;
+    }
+  }
+
+  function toggleNoise(type) {
+    initAudio();
+    const btn = document.getElementById(`btn-noise-${type}`);
+    if (type === 'rain') {
+      if (rainNode) {
+        stopRain();
+        btn.classList.remove('active');
+      } else {
+        startRain();
+        btn.classList.add('active');
+      }
+    } else if (type === 'river') {
+      if (riverNode) {
+        stopRiver();
+        btn.classList.remove('active');
+      } else {
+        startRiver();
+        btn.classList.add('active');
+      }
+    }
+  }
+
+  function adjustVolume(type, val) {
+    if (type === 'rain' && rainGain) {
+      rainGain.gain.setValueAtTime(val * 0.15, audioCtx.currentTime);
+    } else if (type === 'river' && riverGain) {
+      riverGain.gain.setValueAtTime(val * 0.12, audioCtx.currentTime);
+    }
+  }
+
+  const screens = {
+    menu: document.getElementById('screen-menu'),
+    muyu: document.getElementById('screen-muyu'),
+    incense: document.getElementById('screen-incense'),
+    mala: document.getElementById('screen-mala')
+  };
+
+  const navBackBtn = document.getElementById('btn-back');
+  const titleElem = document.getElementById('page-title');
+  const subtitleElem = document.getElementById('page-subtitle');
+
+  const metaInfo = {
+    menu: { title: "心。靜", sub: "靜坐觀心・萬籟俱息" },
+    muyu: { title: "叩敲木魚", sub: "息滅妄念・心若如水" },
+    incense: { title: "靜心上香", sub: "祥煙縈繞・氣和神清" },
+    mala: { title: "轉動念珠", sub: "一念一清涼・百八煩惱輕" }
+  };
+
+  function goToScreen(key) {
+    initAudio();
+    Object.values(screens).forEach(s => s.classList.remove('active'));
+    screens[key].classList.add('active');
+    titleElem.innerText = metaInfo[key].title;
+    subtitleElem.innerText = metaInfo[key].sub;
+
+    if (key === 'menu') {
+      navBackBtn.style.display = 'none';
+      stopMuyuAuto();
+    } else {
+      navBackBtn.style.display = 'block';
+    }
+  }
+
+  navBackBtn.addEventListener('click', () => goToScreen('menu'));
+
+  let muyuScore = 0;
+  let autoTimer = null;
+  const muyuBtn = document.getElementById('muyu-btn');
+  const muyuCounter = document.getElementById('muyu-count');
+  const autoBtn = document.getElementById('muyu-auto-btn');
+
+  function tapMuyu(e) {
+    soundMuyu();
+    muyuScore++;
+    muyuCounter.innerText = muyuScore;
+
+    const tip = document.createElement('div');
+    tip.className = 'float-tip';
+    tip.innerText = '心靜 +1';
+    
+    const rect = muyuBtn.getBoundingClientRect();
+    tip.style.left = (rect.width / 2 - 25) + 'px';
+    muyuBtn.appendChild(tip);
+    setTimeout(() => tip.remove(), 800);
+  }
+
+  muyuBtn.addEventListener('pointerdown', tapMuyu);
+
+  function stopMuyuAuto() {
+    if (autoTimer) {
+      clearInterval(autoTimer);
+      autoTimer = null;
+      autoBtn.innerText = '開啟自動助敲';
+    }
+  }
+
+  autoBtn.addEventListener('click', () => {
+    if (autoTimer) {
+      stopMuyuAuto();
+    } else {
+      autoTimer = setInterval(() => {
+        muyuBtn.classList.add('muyu-hit');
+        tapMuyu();
+        setTimeout(() => muyuBtn.classList.remove('muyu-hit'), 80);
+      }, 1500);
+      autoBtn.innerText = '停止助敲';
+    }
+  });
+
+  const incenseStick = document.getElementById('incense-stick');
+  const incenseStatus = document.getElementById('incense-status');
+  const incenseTimerElem = document.getElementById('incense-timer');
+  const resetIncenseBtn = document.getElementById('incense-reset-btn');
+  const smokeCanvas = document.getElementById('smoke-canvas');
+  const sCtx = smokeCanvas.getContext('2d');
+
+  let isLit = false;
+  let particles = [];
+  let burnInterval = null;
+  let remainPercent = 100;
+
+  function lightIncense() {
+    if (isLit) return;
+    isLit = true;
+    incenseStick.classList.add('lit');
+    soundChime();
+    incenseStatus.innerText = "清心燃香中";
+    incenseTimerElem.innerText = "心香一瓣・專注當下";
+
+    burnInterval = setInterval(() => {
+      remainPercent -= 0.5;
+      incenseStick.style.height = `${Math.max(30, 120 * (remainPercent / 100))}px`;
+      if (remainPercent <= 0) {
+        clearInterval(burnInterval);
+        isLit = false;
+        incenseStick.classList.remove('lit');
+        incenseStatus.innerText = "敬香圓滿";
+        incenseTimerElem.innerText = "福慧隨行・請添新香";
+      }
+    }, 1000);
+  }
+
+  incenseStick.addEventListener('click', lightIncense);
+
+  resetIncenseBtn.addEventListener('click', () => {
+    clearInterval(burnInterval);
+    isLit = false;
+    remainPercent = 100;
+    incenseStick.style.height = '120px';
+    incenseStick.classList.remove('lit');
+    incenseStatus.innerText = "敬奉清香";
+    incenseTimerElem.innerText = "點擊香枝靜心引燃";
+  });
+
+  function updateSmoke() {
+    sCtx.clearRect(0, 0, smokeCanvas.width, smokeCanvas.height);
+    if (isLit) {
+      for (let i = 0; i < 2; i++) {
+        particles.push({
+          x: smokeCanvas.width / 2 + (Math.random() - 0.5) * 4,
+          y: smokeCanvas.height - 10,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: - (1.2 + Math.random() * 0.8),
+          size: 3 + Math.random() * 2,
+          alpha: 0.35
+        });
+      }
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx + Math.sin(p.y * 0.05) * 0.3;
+      p.y += p.vy;
+      p.size += 0.15;
+      p.alpha -= 0.0028;
+
+      if (p.alpha <= 0 || p.y <= 0) {
+        particles.splice(i, 1);
+      } else {
+        sCtx.beginPath();
+        sCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        sCtx.fillStyle = `rgba(180, 175, 170, ${p.alpha})`;
+        sCtx.fill();
+      }
+    }
+    requestAnimationFrame(updateSmoke);
+  }
+  updateSmoke();
+
+  const malaDial = document.getElementById('mala-dial');
+  const malaCountElem = document.getElementById('mala-count');
+  const totalBeads = 18; 
+  let beadAngleOffset = 0;
+  let totalMalaTaps = 0;
+
+  function renderBeads() {
+    const radius = 80;
+    const center = 100;
+    malaDial.querySelectorAll('.bead-item').forEach(b => b.remove());
+
+    for (let i = 0; i < totalBeads; i++) {
+      const angle = (i / totalBeads) * (Math.PI * 2) + beadAngleOffset;
+      const x = center + radius * Math.cos(angle) - 9;
+      const y = center + radius * Math.sin(angle) - 9;
+
+      const bead = document.createElement('div');
+      bead.className = 'bead-item' + (i === 0 ? ' guru-bead' : '');
+      bead.style.transform = `translate(${x}px, ${y}px)`;
+      malaDial.appendChild(bead);
+    }
+  }
+  renderBeads();
+
+  function advanceBead() {
+    soundBead();
+    totalMalaTaps++;
+    beadAngleOffset += (Math.PI * 2) / totalBeads;
+    renderBeads();
+
+    malaCountElem.innerText = totalMalaTaps;
+    if (totalMalaTaps % 108 === 0) {
+      soundChime();
+    }
+  }
+
+  function resetMala() {
+    totalMalaTaps = 0;
+    beadAngleOffset = 0;
+    renderBeads();
+    malaCountElem.innerText = totalMalaTaps;
+  }
+
+  let startY = 0;
+  malaDial.addEventListener('pointerdown', (e) => {
+    startY = e.clientY;
+  });
+
+  malaDial.addEventListener('pointerup', (e) => {
+    advanceBead();
+  });
+</script>
+</body>
+</html>
