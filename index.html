@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>心。靜</title>
+
+<!-- iOS & Android PWA 全螢幕設定 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="心。靜">
+<link rel="manifest" href="data:application/manifest+json,{%22name%22:%22心。靜%22,%22short_name%22:%22心靜%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22orientation%22:%22portrait%22,%22background_color%22:%22%23FAF6F0%22,%22theme_color%22:%22%23FAF6F0%22}">
+
+<style>
+  :root {
+    --bg-cream: #FAF6F0;
+    --card-bg: #FFFFFF;
+    --wood-main: #B38664;
+    --wood-light: #DFC7B4;
+    --sage-green: #98A78F;
+    --warm-terracotta: #D3927D;
+    --text-primary: #5C4B43;
+    --text-sub: #9E8E84;
+    --shadow-soft: 0 10px 25px rgba(179, 134, 100, 0.12);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--bg-cream);
+    position: fixed;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #app-container {
+    width: 100%;
+    max-width: 430px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    padding: calc(16px + env(safe-area-inset-top)) 20px calc(14px + env(safe-area-inset-bottom)) 20px;
+  }
+
+  header {
+    text-align: center;
+    position: relative;
+    z-index: 10;
+  }
+
+  .nav-back {
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: var(--text-sub);
+    cursor: pointer;
+    display: none;
+    padding: 8px;
+    border-radius: 50%;
+  }
+
+  h1 {
+    font-size: 22px;
+    letter-spacing: 5px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .subtitle {
+    font-size: 12px;
+    color: var(--text-sub);
+    letter-spacing: 2px;
+    margin-top: 2px;
+  }
+
+  .screen {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+  }
+
+  .screen.active {
+    display: flex;
+  }
+
+  /* 主選單 */
+  .menu-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .menu-card {
+    background: var(--card-bg);
+    border-radius: 22px;
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: var(--shadow-soft);
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+
+  .menu-card:active {
+    transform: scale(0.96);
+  }
+
+  .card-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: var(--bg-cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card-info h2 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .card-info p {
+    font-size: 12px;
+    color: var(--text-sub);
+  }
+
+  /* 木魚 */
+  .muyu-box {
+    position: relative;
+    cursor: pointer;
+    margin: 25px 0;
+  }
+
+  .muyu-svg {
+    width: 180px;
+    height: 160px;
+    transition: transform 0.08s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 15px 20px rgba(179, 134, 100, 0.15));
+  }
+
+  .muyu-box:active .muyu-svg, .muyu-hit {
+    transform: scale(0.90);
+  }
+
+  .counter-box {
+    text-align: center;
+    margin-bottom: 12px;
+    z-index: 5;
+  }
+
+  .counter-num {
+    font-size: 38px;
+    font-weight: 300;
+    color: var(--text-primary);
+  }
+
+  .counter-label {
+    font-size: 12px;
+    color: var(--text-sub);
+    letter-spacing: 2px;
+  }
+
+  .float-tip {
+    position: absolute;
+    top: 15%;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--warm-terracotta);
+    opacity: 0;
+    pointer-events: none;
+    animation: floatUp 0.8s ease-out forwards;
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(0.9); }
+    100% { opacity: 0; transform: translateY(-50px) scale(1.15); }
+  }
+
+  /* 上香 */
+  .incense-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 300px;
+    justify-content: flex-end;
+    position: relative;
+    width: 100%;
+  }
+
+  .censer {
+    width: 110px;
+    height: 55px;
+    background: #7D8E74;
+    border-radius: 12px 12px 28px 25px;
+    box-shadow: 0 8px 15px rgba(125, 142, 116, 0.2);
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  .censer::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    width: 122px;
+    height: 10px;
+    background: #6A7C61;
+    border-radius: 5px;
+  }
+
+  .incense-stick {
+    width: 5px;
+    height: 140px;
+    background: #964B00;
+    border-radius: 3px;
+    position: absolute;
+    bottom: 40px;
+    cursor: pointer;
+    transition: height 0.3s ease;
+  }
+
+  .incense-tip {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #FF5722;
+    box-shadow: 0 0 8px #FF7043, 0 0 15px #FFAB91;
+    display: none;
+  }
+
+  .incense-stick.lit .incense-tip {
+    display: block;
+    animation: glow 1.8s infinite alternate ease-in-out;
+  }
+
+  @keyframes glow {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; filter: drop-shadow(0 0 6px #FF7043); }
+  }
+
+  canvas#smoke-canvas {
+    position: absolute;
+    bottom: 170px;
+    width: 160px;
+    height: 180px;
+    pointer-events: none;
+  }
+
+  /* 📿 手持立體環狀念珠介面 (真實透視疊加) */
+  .mala-stage {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    touch-action: none;
+  }
+
+  #mala-canvas {
+    cursor: grab;
+    display: block;
+  }
+
+  #mala-canvas:active {
+    cursor: grabbing;
+  }
+
+  /* 左下方轉動圈數卡片 */
+  .mala-laps-box {
+    position: absolute;
+    left: 4px;
+    bottom: 8px;
+    background: var(--card-bg);
+    padding: 8px 16px;
+    border-radius: 18px;
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    border: 1px solid var(--wood-light);
+    pointer-events: none;
+  }
+
+  .laps-title {
+    font-size: 11px;
+    color: var(--text-sub);
+    letter-spacing: 1px;
+  }
+
+  .laps-count {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--wood-main);
+  }
+
+  .mala-reset-btn {
+    position: absolute;
+    right: 4px;
+    bottom: 8px;
+    background: var(--card-bg);
+    border: 1px solid var(--wood-light);
+    color: var(--text-sub);
+    padding: 8px 16px;
+    border-radius: 18px;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* 自然白噪音面板 */
+  .noise-panel {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 10px 16px;
+    box-shadow: var(--shadow-soft);
+    width: 100%;
+    margin-bottom: 8px;
+    z-index: 5;
+  }
+
+  .noise-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sub);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .noise-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .noise-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .noise-btn {
+    background: var(--bg-cream);
+    border: none;
+    color: var(--text-primary);
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    cursor: pointer;
+    min-width: 80px;
+  }
+
+  .noise-btn.active {
+    background: var(--sage-green);
+    color: #FFF;
+    font-weight: bold;
+  }
+
+  .noise-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--bg-cream);
+    outline: none;
+  }
+
+  .noise-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--wood-main);
+    cursor: pointer;
+  }
+
+  .control-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--wood-light);
+    color: var(--text-primary);
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: var(--shadow-soft);
+    margin-top: 6px;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-sub);
+    letter-spacing: 1px;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<div id="app-container">
+  <header>
+    <button class="nav-back" id="btn-back">←</button>
+    <h1 id="page-title">心。靜</h1>
+    <div class="subtitle" id="page-subtitle">靜坐觀心・萬籟俱息</div>
+  </header>
+
+  <!-- 主選單 -->
+  <main class="screen active" id="screen-menu">
+    <div class="menu-grid">
+      <div class="menu-card" onclick="goToScreen('muyu')">
+        <div class="card-icon">
+          <svg width="32" height="30" viewBox="0 0 100 100">
+            <path d="M20,60 C20,35 45,20 70,25 C85,28 90,45 85,65 C78,82 50,85 30,80 Z" fill="#B38664"/>
+            <circle cx="65" cy="45" r="7" fill="#FFF"/>
+            <path d="M40,65 Q60,60 70,75" stroke="#7E5637" stroke-width="5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <h2>叩敲木魚</h2>
+          <p>叩響清明，撫平心緒雜念</p>
+        </div>
+      </div>
+
+      <div class="menu-card" onclick="goToScreen('incense')">
+        <div class="card-icon">
+          <svg width="32" height="30" viewBox="0 0 100 100">
+            <path d="M30,70 L70,70 C70,85 30,85 30,70 Z" fill="#7D8E74"/>
+            <line x1="50" y1="20" x2="50" y2="70" stroke="#964B00" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="50" cy="20" r="4" fill="#FF7043"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <h2>靜心上香</h2>
+          <p>一縷清煙，凝神靜息心安</p>
+        </div>
+      </div>
+
+      <div class="menu-card" onclick="goToScreen('mala')">
+        <div class="card-icon">
+          <svg width="32" height="30" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="30" stroke="#B38664" stroke-width="5" fill="none" stroke-dasharray="2 12"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <h2>手持念珠</h2>
+          <p>指撫珠圓，百零八念得淨</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 木魚 -->
+  <section class="screen" id="screen-muyu">
+    <div class="counter-box">
+      <div class="counter-num" id="muyu-count">0</div>
+      <div class="counter-label">功德平靜</div>
+    </div>
+    <div class="muyu-box" id="muyu-btn">
+      <svg class="muyu-svg" viewBox="0 0 120 100">
+        <path d="M 25,60 C 20,30 50,15 80,22 C 105,28 110,50 102,70 C 92,90 55,94 32,88 C 22,85 24,70 25,60 Z" fill="#C29470"/>
+        <path d="M 38,58 C 36,42 55,30 75,34 C 92,38 96,52 90,66 C 83,78 58,80 43,76 Z" fill="#B38664"/>
+        <circle cx="75" cy="46" r="6.5" fill="#FAF6F0"/>
+        <path d="M 45,70 Q 65,65 78,76" stroke="#7A5338" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+        <circle cx="33" cy="38" r="4" fill="#DDBBA0"/>
+      </svg>
+    </div>
+    <button class="control-btn" id="muyu-auto-btn">開啟自動助敲</button>
+  </section>
+
+  <!-- 上香 -->
+  <section class="screen" id="screen-incense">
+    <div class="counter-box">
+      <div class="counter-num" id="incense-status">敬奉清香</div>
+      <div class="counter-label" id="incense-timer">點擊香枝靜心引燃</div>
+    </div>
+    <div class="incense-wrapper">
+      <canvas id="smoke-canvas" width="160" height="180"></canvas>
+      <div class="incense-stick" id="incense-stick">
+        <div class="incense-tip"></div>
+      </div>
+      <div class="censer"></div>
+    </div>
+    <button class="control-btn" id="incense-reset-btn">添換新香</button>
+  </section>
+
+  <!-- 📿 手持環狀立體念珠互動介面 -->
+  <section class="screen" id="screen-mala">
+    <div class="counter-box">
+      <div class="counter-num" id="mala-bead-cur">0</div>
+      <div class="counter-label">當前持誦（/ 108 顆）</div>
+    </div>
+
+    <!-- 畫布正中置放區 -->
+    <div class="mala-stage">
+      <canvas id="mala-canvas"></canvas>
+      
+      <!-- 左下方顯示轉動圈數 -->
+      <div class="mala-laps-box">
+        <span class="laps-title">轉動圓滿</span>
+        <span class="laps-count" id="mala-laps-display">0 圈</span>
+      </div>
+
+      <button class="mala-reset-btn" onclick="resetMala()">重設</button>
+    </div>
+  </section>
+
+  <!-- 自然音控制 -->
+  <div class="noise-panel">
+    <div class="noise-title">🎧 自然白噪音助眠</div>
+    <div class="noise-row">
+      <button class="noise-btn" id="btn-noise-rain" onclick="toggleNoise('rain')">🌧️ 觀音甘露</button>
+      <input type="range" class="noise-slider" id="slider-noise-rain" min="0" max="1" step="0.05" value="0.3" oninput="adjustVolume('rain', this.value)">
+    </div>
+    <div class="noise-row">
+      <button class="noise-btn" id="btn-noise-river" onclick="toggleNoise('river')">🌊 禪心流水</button>
+      <input type="range" class="noise-slider" id="slider-noise-river" min="0" max="1" step="0.05" value="0.3" oninput="adjustVolume('river', this.value)">
+    </div>
+  </div>
+
+  <footer>隨順當下・自在自得</footer>
+</div>
+
+<script>
+  let audioCtx = null;
+  let rainNode = null;
+  let riverNode = null;
+  let rainGain = null;
+  let riverGain = null;
+
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }
+
+  /* 🔊 1. 敲擊音效：明亮清脆、帶有硬質敲擊木香的木魚聲 (參考 woodFish1_2.mp3) */
+  function soundMuyu() {
+    initAudio();
+    const t = audioCtx.currentTime;
+
+    // ① 極尖銳清透的槌面磨擦敲擊瞬態 (Crisp Attack Click)
+    const clickOsc = audioCtx.createOscillator();
+    const clickGain = audioCtx.createGain();
+    clickOsc.type = 'sine';
+    clickOsc.frequency.setValueAtTime(2200, t);
+    clickOsc.frequency.exponentialRampToValueAtTime(1250, t + 0.012);
+    clickGain.gain.setValueAtTime(0.85, t);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.014);
+    
+    clickOsc.connect(clickGain);
+    clickGain.connect(audioCtx.destination);
+    clickOsc.start(t);
+    clickOsc.stop(t + 0.014);
+
+    // ② 空腔共鳴核心 (Resonant Hollow Wood)
+    const bodyOsc = audioCtx.createOscillator();
+    const bodyGain = audioCtx.createGain();
+    bodyOsc.type = 'triangle'; 
+    bodyOsc.frequency.setValueAtTime(920, t);
+    bodyOsc.frequency.exponentialRampToValueAtTime(650, t + 0.055);
+    bodyGain.gain.setValueAtTime(0.9, t);
+    bodyGain.gain.exponentialRampToValueAtTime(0.001, t + 0.065);
+
+    bodyOsc.connect(bodyGain);
+    bodyGain.connect(audioCtx.destination);
+    bodyOsc.start(t);
+    bodyOsc.stop(t + 0.065);
+
+    // ③ 清亮泛音層 (High Ring Overtone)
+    const overOsc = audioCtx.createOscillator();
+    const overGain = audioCtx.createGain();
+    overOsc.type = 'sine';
+    overOsc.frequency.setValueAtTime(1650, t);
+    overOsc.frequency.exponentialRampToValueAtTime(1300, t + 0.025);
+    overGain.gain.setValueAtTime(0.4, t);
+    overGain.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+
+    overOsc.connect(overGain);
+    overGain.connect(audioCtx.destination);
+    overOsc.start(t);
+    overOsc.stop(t + 0.03);
+
+    if (navigator.vibrate) navigator.vibrate(18);
+  }
+
+  /* 🔔 2. 圓滿銅磬音效 */
+  function soundChime() {
+    initAudio();
+    const freqs = [587.33, 880, 1174.66];
+    freqs.forEach((f, idx) => {
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, t);
+      const amp = 0.22 / (idx + 1);
+      gain.gain.setValueAtTime(amp, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 2.8);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 2.8);
+    });
+    if (navigator.vibrate) navigator.vibrate([15, 30, 20]);
+  }
+
+  /* 📿 3. 撥動念珠聲音 */
+  function soundBead() {
+    initAudio();
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1150, t);
+    osc.frequency.exponentialRampToValueAtTime(450, t + 0.03);
+    gain.gain.setValueAtTime(0.3, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.032);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + 0.032);
+    if (navigator.vibrate) navigator.vibrate(12);
+  }
+
+  /* 自然白噪音合成 (雨聲、流水) */
+  function createNoiseBuffer() {
+    const bufferSize = 2 * audioCtx.sampleRate;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
+    return noiseBuffer;
+  }
+
+  function startRain() {
+    initAudio();
+    rainGain = audioCtx.createGain();
+    const val = document.getElementById('slider-noise-rain').value;
+    rainGain.gain.setValueAtTime(val * 0.15, audioCtx.currentTime);
+    const source = audioCtx.createBufferSource();
+    source.buffer = createNoiseBuffer();
+    source.loop = true;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 1000;
+    filter.Q.value = 0.6;
+    source.connect(filter);
+    filter.connect(rainGain);
+    rainGain.connect(audioCtx.destination);
+    source.start(0);
+    rainNode = source;
+  }
+
+  function stopRain() {
+    if (rainNode) { rainNode.stop(); rainNode = null; }
+  }
+
+  function startRiver() {
+    initAudio();
+    riverGain = audioCtx.createGain();
+    const val = document.getElementById('slider-noise-river').value;
+    riverGain.gain.setValueAtTime(val * 0.12, audioCtx.currentTime);
+    const source = audioCtx.createBufferSource();
+    source.buffer = createNoiseBuffer();
+    source.loop = true;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 450;
+    const lfo = audioCtx.createOscillator();
+    const lfoGain = audioCtx.createGain();
+    lfo.frequency.value = 0.25;
+    lfoGain.gain.value = 0.06;
+    lfo.connect(lfoGain);
+    lfoGain.connect(riverGain.gain);
+    source.connect(filter);
+    filter.connect(riverGain);
+    riverGain.connect(audioCtx.destination);
+    source.start(0);
+    lfo.start(0);
+    riverNode = source;
+    riverNode.lfo = lfo;
+  }
+
+  function stopRiver() {
+    if (riverNode) { riverNode.stop(); if (riverNode.lfo) riverNode.lfo.stop(); riverNode = null; }
+  }
+
+  function toggleNoise(type) {
+    initAudio();
+    const btn = document.getElementById(`btn-noise-${type}`);
+    if (type === 'rain') {
+      if (rainNode) { stopRain(); btn.classList.remove('active'); }
+      else { startRain(); btn.classList.add('active'); }
+    } else {
+      if (riverNode) { stopRiver(); btn.classList.remove('active'); }
+      else { startRiver(); btn.classList.add('active'); }
+    }
+  }
+
+  function adjustVolume(type, val) {
+    if (type === 'rain' && rainGain) rainGain.gain.setValueAtTime(val * 0.15, audioCtx.currentTime);
+    if (type === 'river' && riverGain) riverGain.gain.setValueAtTime(val * 0.12, audioCtx.currentTime);
+  }
+
+  /* 介面路由 */
+  const screens = {
+    menu: document.getElementById('screen-menu'),
+    muyu: document.getElementById('screen-muyu'),
+    incense: document.getElementById('screen-incense'),
+    mala: document.getElementById('screen-mala')
+  };
+
+  const navBackBtn = document.getElementById('btn-back');
+  const titleElem = document.getElementById('page-title');
+  const subtitleElem = document.getElementById('page-subtitle');
+
+  const metaInfo = {
+    menu: { title: "心。靜", sub: "靜坐觀心・萬籟俱息" },
+    muyu: { title: "叩敲木魚", sub: "清越一聲・萬緣放下" },
+    incense: { title: "靜心上香", sub: "祥煙縈繞・氣和神清" },
+    mala: { title: "手持念珠", sub: "圓周旋轉・念念清明" }
+  };
+
+  function goToScreen(key) {
+    initAudio();
+    Object.values(screens).forEach(s => s.classList.remove('active'));
+    screens[key].classList.add('active');
+    titleElem.innerText = metaInfo[key].title;
+    subtitleElem.innerText = metaInfo[key].sub;
+
+    if (key === 'menu') {
+      navBackBtn.style.display = 'none';
+      stopMuyuAuto();
+    } else {
+      navBackBtn.style.display = 'block';
+    }
+
+    if (key === 'mala') {
+      resizeMalaCanvas();
+      drawMala();
+    }
+  }
+
+  navBackBtn.addEventListener('click', () => goToScreen('menu'));
+
+  /* 木魚功能 */
+  let muyuScore = 0;
+  let autoTimer = null;
+  const muyuBtn = document.getElementById('muyu-btn');
+  const muyuCounter = document.getElementById('muyu-count');
+  const autoBtn = document.getElementById('muyu-auto-btn');
+
+  function tapMuyu() {
+    soundMuyu();
+    muyuScore++;
+    muyuCounter.innerText = muyuScore;
+
+    const tip = document.createElement('div');
+    tip.className = 'float-tip';
+    tip.innerText = '心靜 +1';
+    const rect = muyuBtn.getBoundingClientRect();
+    tip.style.left = (rect.width / 2 - 25) + 'px';
+    muyuBtn.appendChild(tip);
+    setTimeout(() => tip.remove(), 800);
+  }
+
+  muyuBtn.addEventListener('pointerdown', tapMuyu);
+
+  function stopMuyuAuto() {
+    if (autoTimer) {
+      clearInterval(autoTimer);
+      autoTimer = null;
+      autoBtn.innerText = '開啟自動助敲';
+    }
+  }
+
+  autoBtn.addEventListener('click', () => {
+    if (autoTimer) {
+      stopMuyuAuto();
+    } else {
+      autoTimer = setInterval(() => {
+        muyuBtn.classList.add('muyu-hit');
+        tapMuyu();
+        setTimeout(() => muyuBtn.classList.remove('muyu-hit'), 80);
+      }, 1400);
+      autoBtn.innerText = '停止助敲';
+    }
+  });
+
+  /* 上香動態 */
+  const incenseStick = document.getElementById('incense-stick');
+  const incenseStatus = document.getElementById('incense-status');
+  const incenseTimerElem = document.getElementById('incense-timer');
+  const resetIncenseBtn = document.getElementById('incense-reset-btn');
+  const smokeCanvas = document.getElementById('smoke-canvas');
+  const sCtx = smokeCanvas.getContext('2d');
+  let isLit = false, particles = [], burnInterval = null, remainPercent = 100;
+
+  function lightIncense() {
+    if (isLit) return;
+    isLit = true;
+    incenseStick.classList.add('lit');
+    soundChime();
+    incenseStatus.innerText = "清心燃香中";
+    incenseTimerElem.innerText = "心香一瓣・專注當下";
+
+    burnInterval = setInterval(() => {
+      remainPercent -= 0.5;
+      incenseStick.style.height = `${Math.max(30, 130 * (remainPercent / 100))}px`;
+      if (remainPercent <= 0) {
+        clearInterval(burnInterval);
+        isLit = false;
+        incenseStick.classList.remove('lit');
+        incenseStatus.innerText = "敬香圓滿";
+        incenseTimerElem.innerText = "福慧隨行・請添新香";
+      }
+    }, 1000);
+  }
+
+  incenseStick.addEventListener('click', lightIncense);
+
+  resetIncenseBtn.addEventListener('click', () => {
+    clearInterval(burnInterval);
+    isLit = false;
+    remainPercent = 100;
+    incenseStick.style.height = '130px';
+    incenseStick.classList.remove('lit');
+    incenseStatus.innerText = "敬奉清香";
+    incenseTimerElem.innerText = "點擊香枝靜心引燃";
+  });
+
+  function updateSmoke() {
+    sCtx.clearRect(0, 0, smokeCanvas.width, smokeCanvas.height);
+    if (isLit) {
+      for (let i = 0; i < 2; i++) {
+        particles.push({
+          x: smokeCanvas.width / 2 + (Math.random() - 0.5) * 4,
+          y: smokeCanvas.height - 10,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: - (1.2 + Math.random() * 0.8),
+          size: 3 + Math.random() * 2,
+          alpha: 0.35
+        });
+      }
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx + Math.sin(p.y * 0.05) * 0.3;
+      p.y += p.vy;
+      p.size += 0.15;
+      p.alpha -= 0.0028;
+
+      if (p.alpha <= 0 || p.y <= 0) {
+        particles.splice(i, 1);
+      } else {
+        sCtx.beginPath();
+        sCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        sCtx.fillStyle = `rgba(180, 175, 170, ${p.alpha})`;
+        sCtx.fill();
+      }
+    }
+    requestAnimationFrame(updateSmoke);
+  }
+  updateSmoke();
+
+  /* ==========================================================
+     📿 3. 環狀立體手持念珠 (第一粒紅珠永久固定實體 + 完美3D空間層次)
+     ========================================================== */
+  const malaCanvas = document.getElementById('mala-canvas');
+  const mCtx = malaCanvas.getContext('2d');
+  const curBeadDisplay = document.getElementById('mala-bead-cur');
+  const lapsDisplay = document.getElementById('mala-laps-display');
+
+  // 環上共 27 顆實體珠 (27 顆形成完整閉合環，均勻分佈)
+  const TOTAL_VISIBLE_BEADS = 27; 
+  
+  let currentRotationAngle = 0;  // 實時旋轉弧度
+  let activeBeadCount = 0;      // 玩家實時持誦數值 (0 ~ 107)
+  let malaLaps = 0;             // 圓滿圈數
+  let lockedDirection = null;   // 鎖定的順行方向 ('cw' 順時針 或 'ccw' 逆時針)
+
+  function resizeMalaCanvas() {
+    const parent = malaCanvas.parentElement;
+    malaCanvas.width = parent.clientWidth || 320;
+    malaCanvas.height = parent.clientHeight || 450;
+  }
+
+  // 繪製具備精美 3D 球體光影與真實木質紋理的佛珠
+  function drawTexturedBead(ctx, x, y, radius, isGuru, angle) {
+    ctx.save();
+    
+    // 1. 投影陰影
+    ctx.shadowColor = 'rgba(25, 20, 15, 0.35)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 6;
+
+    // 2. 剪裁出球體範疇以便繪製紋理
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.clip();
+
+    // 3. 填充漸層底色
+    const baseGrad = ctx.createRadialGradient(
+      x - radius * 0.3, y - radius * 0.3, radius * 0.1,
+      x, y, radius
+    );
+    if (isGuru) {
+      // 永久固定的第一粒紅色佛頭（南紅瑪瑙/蜜蠟紅玉髓質感）
+      baseGrad.addColorStop(0, '#FF8A80');
+      baseGrad.addColorStop(0.25, '#D32F2F');
+      baseGrad.addColorStop(0.7, '#880E4F');
+      baseGrad.addColorStop(1, '#3E0012');
+    } else {
+      // 還原截圖中的溫潤黃檀木色調
+      baseGrad.addColorStop(0, '#FFD8A8');
+      baseGrad.addColorStop(0.3, '#F5B041');
+      baseGrad.addColorStop(0.75, '#D35400');
+      baseGrad.addColorStop(1, '#7E5109');
+    }
+    ctx.fillStyle = baseGrad;
+    ctx.fillRect(x - radius - 2, y - radius - 2, radius * 2 + 4, radius * 2 + 4);
+
+    // 4. 繪製微弧度木質直紋理
+    ctx.strokeStyle = isGuru ? 'rgba(255, 255, 255, 0.12)' : 'rgba(90, 45, 10, 0.18)';
+    ctx.lineWidth = 1;
+    const stripeCount = 6;
+    for (let j = -stripeCount; j <= stripeCount; j++) {
+      const offset = (j / stripeCount) * radius * 0.9;
+      ctx.beginPath();
+      ctx.arc(x + offset + radius * 0.2, y, radius * 1.5, Math.PI * 0.7, Math.PI * 1.3);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+
+    // 5. 亮部高光反射點 (Specular Highlight)
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(x - radius * 0.28, y - radius * 0.32, radius * 0.3, radius * 0.15, Math.PI / 4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+    ctx.fill();
+    ctx.restore();
+
+    // 如果是第一粒紅珠（佛頭），繪製頂部金屬扣與佛塔飾件
+    if (isGuru) {
+      ctx.save();
+      ctx.fillStyle = '#F4D03F';
+      ctx.beginPath();
+      ctx.arc(x, y - radius - 2, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // 繪製手持縱向立體念珠
+  function drawMala() {
+    const w = malaCanvas.width;
+    const h = malaCanvas.height;
+    mCtx.clearRect(0, 0, w, h);
+
+    const centerX = w / 2;
+    const centerY = h / 2;
+
+    // 契合截圖的縱向拉長橢圓半徑
+    const rx = w * 0.24; 
+    const ry = h * 0.38; 
+
+    // 1. 繪製穿過佛珠的金色實體穿心線
+    mCtx.save();
+    mCtx.strokeStyle = '#D4AC0D';
+    mCtx.lineWidth = 3.5;
+    mCtx.beginPath();
+    for (let angle = 0; angle <= Math.PI * 2 + 0.1; angle += 0.05) {
+      const lineX = centerX + rx * Math.sin(angle);
+      const lineY = centerY - ry * Math.cos(angle);
+      if (angle === 0) mCtx.moveTo(lineX, lineY);
+      else mCtx.lineTo(lineX, lineY);
+    }
+    mCtx.stroke();
+    mCtx.restore();
+
+    // 2. 沿環形軌道建立 27 顆實體珠 (第 0 顆永遠固定為紅珠)
+    const tempBeads = [];
+    for (let i = 0; i < TOTAL_VISIBLE_BEADS; i++) {
+      // 每一顆珠子的即時角度 = 固有相位 + 整串念珠的旋轉角度
+      const angle = (i / TOTAL_VISIBLE_BEADS) * Math.PI * 2 + currentRotationAngle;
+      
+      const beadX = centerX + rx * Math.sin(angle);
+      const beadY = centerY - ry * Math.cos(angle);
+
+      // 【核心層次計算】由 sin(angle) 決定：
+      // - 右排在最前 (depth = +1)
+      // - 左排在最後 (depth = -1)
+      // - 最頂部 (12點鐘) 與最底部 (6點鐘) 處於最正中層 (depth = 0)
+      const depth = Math.sin(angle); 
+      
+      // 前排大、後排小透視
+      const scale = 0.78 + (depth + 1) * 0.18; 
+      const radius = 22 * scale;
+
+      // 【關鍵修復】：第 0 號珠永遠是第一顆紅珠，位置實體鎖定，隨整串珠轉動，絕不消失
+      const isGuru = (i === 0);
+
+      tempBeads.push({ x: beadX, y: beadY, radius, isGuru, depth, angle });
+    }
+
+    // 【層級排序】深度從小到大繪製：後排先畫，中排頂部再畫，前排最後畫！
+    // 頂部的珠子會自然夾在正中間，絕不唐突飄於最上層！
+    tempBeads.sort((a, b) => a.depth - b.depth);
+    tempBeads.forEach(b => {
+      drawTexturedBead(mCtx, b.x, b.y, b.radius, b.isGuru, b.angle);
+    });
+  }
+
+  /* 🎯 全方位力矩拖曳旋轉系統 (任何位置拉動皆能順暢旋轉 + 107➔0 圈數+1) */
+  let isDragging = false;
+  let lastTouchX = 0;
+  let lastTouchY = 0;
+  let angleDeltaAccumulator = 0;
+
+  malaCanvas.addEventListener('pointerdown', (e) => {
+    initAudio();
+    isDragging = true;
+    
+    const rect = malaCanvas.getBoundingClientRect();
+    lastTouchX = e.clientX - rect.left;
+    lastTouchY = e.clientY - rect.top;
+    angleDeltaAccumulator = 0;
+  });
+
+  window.addEventListener('pointermove', (e) => {
+    if (!isDragging) return;
+    
+    const rect = malaCanvas.getBoundingClientRect();
+    const touchX = e.clientX - rect.left;
+    const touchY = e.clientY - rect.top;
+    
+    const dx = touchX - lastTouchX;
+    const dy = touchY - lastTouchY;
+    lastTouchX = touchX;
+    lastTouchY = touchY;
+
+    const centerX = malaCanvas.width / 2;
+    const centerY = malaCanvas.height / 2;
+
+    let effX = touchX - centerX;
+    let effY = touchY - centerY;
+
+    // 若手指觸碰在中央線附近，賦予右側力矩偏置，使直向單手向下滑動時能無阻力順暢轉動
+    if (Math.abs(effX) < 30) {
+      effX = 50; 
+    }
+
+    // 計算二維旋轉切線位移力矩 (Cross-Product Rotation)
+    const deltaTheta = (effX * dy - effY * dx) / 18000;
+    
+    currentRotationAngle += deltaTheta;
+    angleDeltaAccumulator += deltaTheta;
+
+    // 每滑動過一顆珠子的角度間距 (2 * Math.PI / TOTAL_VISIBLE_BEADS)
+    const anglePerBead = (Math.PI * 2) / TOTAL_VISIBLE_BEADS;
+    
+    if (Math.abs(angleDeltaAccumulator) >= anglePerBead) {
+      soundBead(); 
+      
+      const isClockwise = (angleDeltaAccumulator > 0);
+      const currentSwipeDir = isClockwise ? 'cw' : 'ccw';
+
+      // 1. 如果尚未鎖定轉動方向，則以重設後的第一滑決定順行方向
+      if (lockedDirection === null) {
+        lockedDirection = currentSwipeDir;
+      }
+
+      if (currentSwipeDir === lockedDirection) {
+        // 【順行加數】
+        if (activeBeadCount === 107) {
+          // 在第 107 顆的時候，再前進一顆數字直接變為 0，且圈數加 1！
+          activeBeadCount = 0;
+          malaLaps++;
+          lapsDisplay.innerText = `${malaLaps} 圈`;
+          soundChime(); 
+        } else {
+          activeBeadCount++;
+        }
+      } else {
+        // 【逆行減數】
+        if (activeBeadCount > 0) {
+          activeBeadCount--;
+        }
+      }
+
+      curBeadDisplay.innerText = activeBeadCount;
+      angleDeltaAccumulator = 0;
+    }
+
+    drawMala();
+  });
+
+  window.addEventListener('pointerup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+
+    // 鬆手後自然磁吸回彈吸附至最近的佛珠定點
+    const angleStep = (Math.PI * 2) / TOTAL_VISIBLE_BEADS;
+    const snapTarget = Math.round(currentRotationAngle / angleStep) * angleStep;
+    snapRotation(snapTarget);
+  });
+
+  function snapRotation(target) {
+    const diff = target - currentRotationAngle;
+    if (Math.abs(diff) < 0.005) {
+      currentRotationAngle = target;
+      drawMala();
+      return;
+    }
+    currentRotationAngle += diff * 0.22;
+    drawMala();
+    requestAnimationFrame(() => snapRotation(target));
+  }
+
+  // 徹底重設
+  function resetMala() {
+    currentRotationAngle = 0;
+    activeBeadCount = 0;
+    malaLaps = 0;
+    lockedDirection = null; // 徹底清空轉動方向鎖！玩家下一步轉動即為新方向
+    
+    lapsDisplay.innerText = "0 圈";
+    curBeadDisplay.innerText = "0";
+    drawMala();
+  }
+</script>
+</body>
+</html>
